@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>GanttChartView sample</title>
+        <script type="text/javascript" src="{{ url_for('static', filename='DlhSoft.ProjectData.GanttChart.HTML.Controls.js') }}"></script>
+    </head>
+    <body>
+        <h1 style="font-family: Calibri, Arial">GanttChartView sample</h1>
+        <div id="ganttChartView" style="height: 480px; margin-bottom: 4px;">...</div>
+        
+        <script type="text/javascript">
+            // Retrieve and store the control for reference purposes.
+            var ganttChartView = document.querySelector('#ganttChartView');
+            
+            // Prepare data items.
+            var items = [], year = 2020, month = 1 - 1;
+
+            {% for i in range(1, 32) %}
+                var item = { 
+                    content: "Task {{i}}",
+                    start: new Date(year, month, {{i}}, 8),
+                    finish: new Date(year, month, {{i * 2}}, {{ 12 if i % 2 == 0 else 16 }}) };
+                {% if i % 2 == 0 %}
+                    item.predecessors = [{ item: previousItem }];
+                {% endif %}
+                items.push(item);
+                var previousItem = item;
+            {% endfor %}
+
+            // Prepare control settings.
+            var settings = {
+                currentTime: new Date(),
+                gridWidth: '26%', chartWidth: '74%'
+            };
+            
+            // Remove not used grid columns.
+            var columns = DlhSoft.Controls.GanttChartView.getDefaultColumns(items, settings);
+            var indexOffset = columns[0].isSelection ? 1 : 0;
+            columns.splice(indexOffset + 3, 3);
+            settings.columns = columns;
+
+            // Initialize the component.
+            DlhSoft.Controls.GanttChartView.initialize(ganttChartView, items, settings);
+
+            // Handle client side item changes.
+            settings.itemPropertyChangeHandler = function (item, propertyName, isDirect, isFinal){
+                if ((propertyName == 'content' || propertyName == 'start' || propertyName == 'finish' || propertyName == 'completedFinish' || propertyName == 'predecessors')
+                    && isFinal) {
+                    //...
+                }
+            };
+        </script>
+    </body>
+</html>
